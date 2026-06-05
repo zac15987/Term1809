@@ -1,0 +1,10 @@
+<Project>
+  <!-- This file applies to all projects in the solution -->
+  <PropertyGroup>
+    <!-- Self-contained so the app runs on machines without the .NET runtime installed (Windows 10 LTSC 2019 targets).
+         Applies to every real build, including Visual Studio F5 — so a VS-built exe also runs offline.
+         Trade-off: VS builds copy the full runtime (~240 DLLs), so they're slower and larger.
+         The DesignTimeBuild guard keeps IntelliSense/design-time passes lightweight (no runtime publish). -->
+    <SelfContained Condition="'$(DesignTimeBuild)' != 'true'">true</SelfContained>
+  </PropertyGroup>
+</Project>

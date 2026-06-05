@@ -1,0 +1,32 @@
+## .NET / Visual Studio
+bin/
+obj/
+.vs/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+## OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+## Claude Code
+.claude/
+
+# Zpit auto-deploy
+.claude/agents/
+.claude/docs/
+.claude/hooks/
+.claude/settings.json
+.mcp.json

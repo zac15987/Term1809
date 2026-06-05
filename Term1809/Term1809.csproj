@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Platforms>x64</Platforms>
+    <!-- Platforms only fills the VS dropdown; it doesn't change the default Platform (AnyCPU).
+         Pin it so building the project directly (dotnet run/build) lands in the same bin\x64
+         output as the solution/VS build, instead of a parallel AnyCPU bin\ tree. -->
+    <Platform Condition="'$(Platform)' == '' Or '$(Platform)' == 'AnyCPU'">x64</Platform>
+    <Version>1.0.0</Version>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- NETSDK1206: the ConPTY package uses legacy win10-* RIDs; harmless since we copy conpty.dll explicitly below -->
+    <NoWarn>$(NoWarn);NETSDK1206</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="HandyControl" Version="3.5.1" />
+    <PackageReference Include="CI.Microsoft.Terminal.Wpf" Version="1.22.250204002" />
+    <PackageReference Include="CI.Microsoft.Windows.Console.ConPTY" Version="1.22.250314001" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.106">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- The ConPTY package ships its native dll under the legacy win10-x64 RID, which the
+       .NET 8+ RID asset resolution no longer maps from win-x64 (NETSDK1206), so copy it explicitly. -->
+  <ItemGroup>
+    <None Include="$(PkgCI_Microsoft_Windows_Console_ConPTY)\runtimes\win10-x64\native\conpty.dll" CopyToOutputDirectory="PreserveNewest" Link="conpty.dll" Visible="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="icu.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

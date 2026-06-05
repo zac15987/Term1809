@@ -1,0 +1,232 @@
+<hc:Window x:Class="Term1809.MainWindow"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+           xmlns:local="clr-namespace:Term1809"
+           xmlns:hc="https://handyorg.github.io/handycontrol"
+           mc:Ignorable="d"
+           Style="{StaticResource WindowWin10}"
+           Title="Term1809" Height="800" Width="850"
+           Background="{Binding BackroundColorBrush}"
+           ShowTitle="False" ShowIcon="False"
+           NonClientAreaHeight="36"
+           NonClientAreaBackground="{StaticResource TitleBarBrush}"
+           NonClientAreaForeground="{StaticResource TabForegroundBrush}">
+	<!-- Custom title bar (Windows-Terminal style): the tab strip lives in the non-client
+	     area; empty space next to the tabs still drags the window because the root grid
+	     below has no Background (hits fall through to the chrome caption).
+	     NOTE (per HC docs): WindowWin10 must be set explicitly, and the caption-button
+	     color properties must NOT be set as local values on <hc:Window>. -->
+
+	<Window.Resources>
+		<BooleanToVisibilityConverter x:Key="BoolToVis"/>
+		<local:InverseBoolToVisibilityConverter x:Key="InvBoolToVis"/>
+
+		<!-- Tab header: TextBlock normally, TextBox while renaming -->
+		<DataTemplate x:Key="TabHeaderTemplate">
+			<Grid Background="Transparent" ToolTip="{Binding Title}">
+				<TextBlock Text="{Binding Title}" VerticalAlignment="Center"
+				           FontSize="12" TextTrimming="CharacterEllipsis"
+				           Visibility="{Binding IsEditing, Converter={StaticResource InvBoolToVis}}"/>
+				<TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+				         VerticalAlignment="Center" Padding="2,0" Margin="0,-2" FontSize="12"
+				         Background="#FF333333" Foreground="#FFF2F2F2" CaretBrush="#FFF2F2F2"
+				         BorderThickness="0"
+				         Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}"
+				         IsVisibleChanged="RenameBox_IsVisibleChanged"
+				         KeyDown="RenameBox_KeyDown" LostFocus="RenameBox_LostFocus"/>
+			</Grid>
+		</DataTemplate>
+
+		<ContextMenu x:Key="TabContextMenu">
+			<MenuItem Header="Duplicate Tab"
+			          Command="{Binding PlacementTarget.DataContext.DuplicateCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+			<MenuItem Header="Export Text…"
+			          Command="{Binding PlacementTarget.DataContext.ExportTextCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+			<Separator/>
+			<MenuItem Header="Close Tab" Command="hc:ControlCommands.Close"/>
+		</ContextMenu>
+
+		<!-- Windows-Terminal-style tab: rounded top corners, hover highlight, active tab
+		     matches the terminal background so it blends seamlessly into the content. -->
+		<Style x:Key="TerminalTabItemStyle" TargetType="hc:TabItem">
+			<EventSetter Event="MouseDoubleClick" Handler="TabItem_MouseDoubleClick"/>
+			<EventSetter Event="hc:TabItem.Closed" Handler="TabItem_Closed"/>
+			<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+			<Setter Property="Foreground" Value="{StaticResource TabForegroundBrush}"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Margin" Value="0"/>
+			<Setter Property="Padding" Value="12,0,0,0"/>
+			<Setter Property="ContextMenu" Value="{StaticResource TabContextMenu}"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="hc:TabItem">
+						<!-- Transparent root fills the whole tab slot so clicks always select -->
+						<Grid Background="Transparent" SnapsToDevicePixels="True">
+							<Border x:Name="TabBg" Margin="2,4,2,0" CornerRadius="6,6,0,0"
+							        Background="{TemplateBinding Background}">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="Auto"/>
+									</Grid.ColumnDefinitions>
+									<ContentPresenter Grid.Column="0" x:Name="contentPresenter"
+									                  ContentSource="Header" Focusable="False"
+									                  Margin="{TemplateBinding Padding}"
+									                  VerticalAlignment="Center"
+									                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+									<!-- close button: hidden until the tab is hovered or active -->
+									<Button x:Name="CloseBtn" Grid.Column="1" Width="18" Height="18"
+									        Margin="4,0,6,0" Focusable="False" Opacity="0"
+									        Foreground="{StaticResource TabForegroundBrush}"
+									        Command="hc:ControlCommands.Close" ToolTip="Close Tab">
+										<Button.Template>
+											<ControlTemplate TargetType="Button">
+												<Border x:Name="CloseBg" Background="Transparent" CornerRadius="4">
+													<Path Data="M 0,0 L 7,7 M 0,7 L 7,0" Width="7" Height="7"
+													      Stroke="{TemplateBinding Foreground}" StrokeThickness="1"
+													      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+												</Border>
+												<ControlTemplate.Triggers>
+													<Trigger Property="IsMouseOver" Value="True">
+														<Setter TargetName="CloseBg" Property="Background" Value="{StaticResource TabCloseHoverBrush}"/>
+													</Trigger>
+												</ControlTemplate.Triggers>
+											</ControlTemplate>
+										</Button.Template>
+									</Button>
+								</Grid>
+							</Border>
+						</Grid>
+						<ControlTemplate.Triggers>
+							<!-- order matters: IsSelected comes last so it wins over hover -->
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="TabBg" Property="Background" Value="{StaticResource TabHoverBrush}"/>
+								<Setter TargetName="CloseBtn" Property="Opacity" Value="1"/>
+							</Trigger>
+							<Trigger Property="IsSelected" Value="True">
+								<Setter Property="Panel.ZIndex" Value="1"/>
+								<Setter Property="Foreground" Value="{StaticResource TabActiveForegroundBrush}"/>
+								<Setter TargetName="TabBg" Property="Background" Value="{StaticResource TabActiveBrush}"/>
+								<Setter TargetName="CloseBtn" Property="Opacity" Value="1"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+		<!-- Minimal hc:TabControl template: just the header panel (terminals render in
+		     TerminalHost, not in tab content). PART_HeaderPanel is the template part HC
+		     needs for drag-reorder; FluidMoveBehavior keeps the reorder animation. -->
+		<ControlTemplate x:Key="TitleBarTabControlTemplate" TargetType="hc:TabControl">
+			<!-- Wrapper Border is required: TemplateBinding does not resolve on a
+			     template's root element, and the panel needs TabItemWidth/Height. -->
+			<Border>
+				<hc:TabPanel x:Name="PART_HeaderPanel"
+				             MinHeight="{TemplateBinding TabItemHeight}"
+				             TabItemHeight="{TemplateBinding TabItemHeight}"
+				             TabItemWidth="{TemplateBinding TabItemWidth}"
+				             IsTabFillEnabled="{TemplateBinding IsTabFillEnabled}"
+				             HorizontalAlignment="Left" IsItemsHost="True">
+					<hc:Interaction.Behaviors>
+						<hc:FluidMoveBehavior AppliesTo="Children" Duration="{Binding FluidMoveDuration, ElementName=PART_HeaderPanel}">
+							<hc:FluidMoveBehavior.EaseX>
+								<CubicEase EasingMode="EaseOut"/>
+							</hc:FluidMoveBehavior.EaseX>
+						</hc:FluidMoveBehavior>
+					</hc:Interaction.Behaviors>
+				</hc:TabPanel>
+			</Border>
+		</ControlTemplate>
+
+		<!-- Flat icon button for the title bar (+ / v) -->
+		<Style x:Key="TitleBarButtonStyle" TargetType="Button">
+			<Setter Property="Width" Value="30"/>
+			<Setter Property="Height" Value="28"/>
+			<Setter Property="Foreground" Value="{StaticResource TabActiveForegroundBrush}"/>
+			<Setter Property="VerticalAlignment" Value="Bottom"/>
+			<Setter Property="Margin" Value="2,0,0,3"/>
+			<Setter Property="Focusable" Value="False"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border x:Name="Bg" Background="Transparent" CornerRadius="4">
+							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="Bg" Property="Background" Value="{StaticResource TabHoverBrush}"/>
+							</Trigger>
+							<Trigger Property="IsPressed" Value="True">
+								<Setter TargetName="Bg" Property="Background" Value="{StaticResource TabCloseHoverBrush}"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</Window.Resources>
+
+	<!-- Title bar content: tab strip + new-tab + dropdown menu. Column 3 (empty, no
+	     background) remains a window-drag region. -->
+	<hc:Window.NonClientAreaContent>
+		<Grid Height="36" ClipToBounds="True">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+
+			<hc:TabControl x:Name="tabControl" Grid.Column="0"
+			               ItemsSource="{Binding Tabs, RelativeSource={RelativeSource AncestorType=Window}}"
+			               IsDraggable="True" ShowCloseButton="True" ShowOverflowButton="False"
+			               IsAnimationEnabled="True" CanBeClosedByMiddleButton="True"
+			               IsTabFillEnabled="False" TabItemWidth="190" TabItemHeight="36"
+			               Template="{StaticResource TitleBarTabControlTemplate}"
+			               ItemTemplate="{StaticResource TabHeaderTemplate}"
+			               ItemContainerStyle="{StaticResource TerminalTabItemStyle}"
+			               SelectionChanged="TabControl_SelectionChanged"/>
+
+			<Button Grid.Column="1" Style="{StaticResource TitleBarButtonStyle}"
+			        Click="NewTabClicked" ToolTip="New Tab (pwsh)">
+				<TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="11"/>
+			</Button>
+
+			<Button Grid.Column="2" Style="{StaticResource TitleBarButtonStyle}"
+			        Click="MenuButtonClicked" ToolTip="Terminal Actions">
+				<TextBlock Text="&#xE70D;" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
+				<Button.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Clear" Click="ClearTermClicked"/>
+						<MenuItem Header="Restart" Click="RestartClicked"/>
+						<Separator/>
+						<MenuItem Header="Show Buffer" Click="ShowBufferClicked"/>
+						<MenuItem Header="Process Output Sample" Click="ShowProcessOutputClicked"/>
+					</ContextMenu>
+				</Button.ContextMenu>
+			</Button>
+		</Grid>
+	</hc:Window.NonClientAreaContent>
+
+	<!-- Every terminal stays loaded here; only the active one is Visible.
+	     Side margins keep shell text off the window edges; the gap shows the
+	     window Background, which matches the terminal background. -->
+	<Grid x:Name="TerminalHost" Margin="8,0">
+		<Grid.Resources>
+			<!-- Auto-hide the terminal's scrollbar: TerminalControl sets
+			     Maximum = bufferSize - viewHeight, so 0 means nothing scrolled
+			     out of view yet. Scoped here so only terminal scrollbars match. -->
+			<Style TargetType="ScrollBar" BasedOn="{StaticResource {x:Type ScrollBar}}">
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding Maximum, RelativeSource={RelativeSource Self}}" Value="0">
+						<Setter Property="Visibility" Value="Collapsed"/>
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+		</Grid.Resources>
+	</Grid>
+</hc:Window>
