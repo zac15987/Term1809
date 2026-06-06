@@ -10,6 +10,7 @@
          output as the solution/VS build, instead of a parallel AnyCPU bin\ tree. -->
     <Platform Condition="'$(Platform)' == '' Or '$(Platform)' == 'AnyCPU'">x64</Platform>
     <Version>1.0.0</Version>
+    <ApplicationIcon>Term1809.ico</ApplicationIcon>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
 	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <!-- NETSDK1206: the ConPTY package uses legacy win10-* RIDs; harmless since we copy conpty.dll explicitly below -->
