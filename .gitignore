@@ -3,6 +3,9 @@ bin/
 obj/
 .vs/
 
+## Release artifacts (portable zips built for GitHub Releases)
+dist/
+
 ## User-specific files
 *.user
 *.suo
