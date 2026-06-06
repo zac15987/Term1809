@@ -6,6 +6,10 @@
 
 A WPF terminal emulator for Windows, built on the [Official Windows Terminal](https://github.com/microsoft/terminal) ConPTY backend and GPU-accelerated rendering engine. The terminal-integration code in this repository is an independent implementation written against the public ConPTY Win32 API and the Windows Terminal WPF rendering control — see LICENSE and THIRD-PARTY-NOTICES.md. Targets **Windows 10 Enterprise LTSC 2019 (build 17763)** compatibility.
 
+<p align="center">
+  <img src="assets/screenshot.png" alt="Term1809 running PowerShell with the in-titlebar tab UI" width="640">
+</p>
+
 ## Features
 
 - Full terminal emulation: ANSI/VT escape sequences, 24-bit color, mouse support, GPU-accelerated rendering
