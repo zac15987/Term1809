@@ -6,6 +6,8 @@
 
 A WPF terminal emulator for Windows, built on the [Official Windows Terminal](https://github.com/microsoft/terminal) ConPTY backend and GPU-accelerated rendering engine. The terminal-integration code in this repository is an independent implementation written against the public ConPTY Win32 API and the Windows Terminal WPF rendering control — see LICENSE and THIRD-PARTY-NOTICES.md. Targets **Windows 10 Enterprise LTSC 2019 (build 17763)** compatibility.
 
+> **A terminal for Windows 10 version 1809 / LTSC 2019.** Microsoft's official [Windows Terminal](https://github.com/microsoft/terminal) requires Windows 10 1903 (build 18362) or later, so it **cannot be installed on Windows 10 1809 (build 17763)** or Windows 10 Enterprise/IoT LTSC 2019. Term1809 brings a modern, GPU-accelerated terminal — ANSI/VT, 24-bit color, tabs, mouse support — to those older builds. If you searched for *"terminal for Windows 1809"*, *"Windows Terminal for LTSC 2019"*, or *"Windows Terminal on build 17763"*, this is what you were looking for.
+
 <p align="center">
   <img src="assets/screenshot.png" alt="Term1809 running PowerShell with the in-titlebar tab UI" width="640">
 </p>
@@ -83,6 +85,17 @@ Some properties are write-only: the terminal state can be changed externally (e.
 ## Limitations
 
 The terminal renders in its own native HWND (that is how Windows Terminal achieves its performance), so WPF content cannot be drawn on top of the terminal area — the same airspace limitation as WebView2. Context menus and separate windows work fine.
+
+## FAQ
+
+**Can I run Windows Terminal on Windows 10 1809 / LTSC 2019?**
+No — Microsoft's official Windows Terminal requires Windows 10 1903 (build 18362) or newer, so it will not install on Windows 10 version 1809 (build 17763) or Windows 10 Enterprise/IoT LTSC 2019. Term1809 is built specifically to give those builds a modern terminal experience.
+
+**Is this the official Microsoft Windows Terminal?**
+No. Term1809 is an independent project. It reuses the open-source ConPTY backend and the WPF rendering control from [microsoft/terminal](https://github.com/microsoft/terminal) (MIT licensed), but it is not affiliated with or endorsed by Microsoft.
+
+**What Windows versions are supported?**
+Windows 10 build 17763 (version 1809 / LTSC 2019) and later, x64.
 
 ## Credits
 
